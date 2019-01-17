@@ -5,6 +5,7 @@ MIDDLEWARE_CLASSES = [
 ]
 
 
-APP_ROUTES = {
-    '/': 'webapp.views.home_view'
-}
+APP_ROUTES = (
+    (r'^/$', 'webapp.views.home_view'),
+    (r'^/page/(?P<id>\d+)/$', 'webapp.views.page'),
+)

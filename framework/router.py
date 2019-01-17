@@ -1,6 +1,7 @@
 from framework.response import Response, render_to_response
 from framework.request import Request
 from framework.utils import import_object
+import re
 
 
 def view_404(request):
@@ -21,9 +22,9 @@ class Router(object):
             # request middlewares
             self.request_middlewares(request)
 
-            view_full_path = self.routes.get(request.path, 'framework.router.view_404')
+            view_full_path, params = self.find_path_match(request.path)
             view = import_object(view_full_path)
-            response = view(request)
+            response = view(request, **params)
 
             # response middelwares
             self.response_middlewares(response)
@@ -31,6 +32,14 @@ class Router(object):
             response = self.handle_exceptions(e)
 
         return response
+
+    def find_path_match(self, path):
+        for route in self.routes:
+            match = re.match(route[0], path)
+            if match:
+                return route[1], match.groupdict()
+
+        return 'framework.router.view_404', {}
 
     def request_middlewares(self, request):
         middlewares_class_paths = getattr(self.settings, 'MIDDLEWARE_CLASSES', [])
@@ -50,7 +59,7 @@ class Router(object):
         from framework.exceptions import LoginError
 
         if isinstance(exception, LoginError):
-            return render_to_response('<h1>Forbidden</h1>', status_code=403)
+            return render_to_response('<h1>403 Forbidden</h1>', status_code=403)
         else:
             raise exception
 

@@ -2,12 +2,13 @@ from pprint import pprint
 
 class Response(object):
     status = '200 OK'
-    headerlist = [('Content-Type', 'text/html; charset=UTF-8')]
+    headers = {'Content-Type': 'text/html; charset=UTF-8'}
     body = b''
 
     def __call__(self, environ, start_response):
-        self.headerlist.append(('Content-Length', str(len(self.body))))
-        start_response(self.status, self.headerlist)
+        self.headers['Content-Length'] = str(len(self.body))
+        headerlist = [(key, value) for key, value in self.headers.items()]
+        start_response(self.status, headerlist)
         return [self.body]
 
 
